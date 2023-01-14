@@ -28,6 +28,8 @@ import android.content.ContentResolver;
 import android.content.res.Resources;
 import android.provider.Settings;
 import com.android.settings.R;
+import android.os.Handler;
+import java.net.InetAddress;
 
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
@@ -63,6 +65,10 @@ public class SystemSettings extends SettingsPreferenceFragment
     private SystemSettingSwitchPreference mFingerprintVib;
     private static final String AGGRESSIVE_BATTERY ="aggressive_battery";
 
+    private static final String PREF_ADBLOCK = "persist.aicp.hosts_block";
+
+    private Handler mHandler = new Handler();
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +84,7 @@ public class SystemSettings extends SettingsPreferenceFragment
         }
 
         final PackageManager mPm = getActivity().getPackageManager();
+        findPreference(PREF_ADBLOCK).setOnPreferenceChangeListener(this); 
 
         mFingerprintManager = (FingerprintManager) getActivity().getSystemService(Context.FINGERPRINT_SERVICE);
         mFingerprintVib = (SystemSettingSwitchPreference) findPreference(FINGERPRINT_VIB);
@@ -101,6 +108,16 @@ public class SystemSettings extends SettingsPreferenceFragment
             boolean value = (Boolean) newValue;
             Settings.System.putInt(getActivity().getContentResolver(),
                     Settings.System.FP_SUCCESS_VIBRATE, value ? 1 : 0);
+            return true;
+        }  else if (PREF_ADBLOCK.equals(preference.getKey())) {
+            // Flush the java VM DNS cache to re-read the hosts file.
+            // Delay to ensure the value is persisted before we refresh
+            mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        InetAddress.clearDnsCache();
+                    }
+            }, 1000);
             return true;
         }
         return false;

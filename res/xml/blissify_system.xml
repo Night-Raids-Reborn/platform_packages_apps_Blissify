@@ -240,5 +240,11 @@
             	   android:summary="@string/allow_signature_fake_summary"
             	   settings:iconSpaceReserved="false"
             	   android:defaultValue="false" />
+
+        <com.bliss.support.preferences.SystemPropSwitchPreference
+            android:key="persist.aicp.hosts_block"
+            android:title="@string/hosts_block_title"
+            android:summary="@string/hosts_block_summary"
+            android:defaultValue="false" />
     </PreferenceCategory>
 </PreferenceScreen>
